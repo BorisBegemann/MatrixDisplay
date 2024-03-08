@@ -30,7 +30,7 @@ public class DisplayCommunicationService
         {
             _dataSpi.TransferFullDuplex(chunk, new Span<byte>(new byte[chunk.Length]));
             _latchPin.Write(PinValue.High);
-            Task.Delay(TimeSpan.FromTicks(5)).Wait();
+            Task.Delay(TimeSpan.FromTicks(20)).Wait();
             _latchPin.Write(PinValue.Low);
         }
         
