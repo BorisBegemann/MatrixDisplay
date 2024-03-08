@@ -12,7 +12,7 @@ public class DisplayCommunicationService
         {
             ClockFrequency = 500000,
             Mode = SpiMode.Mode0,
-            DataBitLength = 48
+            DataBitLength = 8
         });
     }
     
