@@ -18,7 +18,7 @@ public class DisplayCommunicationService
     
     public void SendImage(DisplayImage image)
     {
-        var payload = image.GetPayload().ToArray();
+        var payload = image.GetPayload().ToArray()[..254];
         _spi!.Write(payload);
     }
 }
