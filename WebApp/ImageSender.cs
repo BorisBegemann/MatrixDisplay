@@ -7,9 +7,9 @@ public class ImageSender : IHostedService
     private readonly TimeSpan _interval;
     private readonly ImageQueue _queue;
     private readonly DisplayCommunicationService _displayCommunicationService;
-    private readonly Logger<ImageSender> _logger;
+    private readonly ILogger<ImageSender> _logger;
 
-    public ImageSender(ImageQueue queue, DisplayCommunicationService displayCommunicationService, Logger<ImageSender> logger)
+    public ImageSender(ImageQueue queue, DisplayCommunicationService displayCommunicationService, ILogger<ImageSender> logger)
     {
         _interval = TimeSpan.FromMilliseconds(100);
         _queue = queue;

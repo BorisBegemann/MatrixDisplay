@@ -4,10 +4,10 @@ namespace WebApp;
 
 public class DisplayCommunicationService
 {
-    private readonly Logger<DisplayCommunicationService> _logger;
+    private readonly ILogger<DisplayCommunicationService> _logger;
     private readonly SpiDevice? _spi;
     
-    public DisplayCommunicationService(Logger<DisplayCommunicationService> logger)
+    public DisplayCommunicationService(ILogger<DisplayCommunicationService> logger)
     {
         _logger = logger;
         _spi = SpiDevice.Create(new SpiConnectionSettings(0, 0)
