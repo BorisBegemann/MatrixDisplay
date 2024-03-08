@@ -24,7 +24,7 @@ public class IndexModel : PageModel
     
     public IActionResult OnPostImage(string image)
     {
-        _logger.LogError("Got called with Image");
+        _logger.LogInformation("Received Image");
         var data = Convert.FromBase64String(image[22..]);
         using (MemoryStream ms = new MemoryStream(data))
         {

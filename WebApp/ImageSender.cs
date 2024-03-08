@@ -7,12 +7,14 @@ public class ImageSender : IHostedService
     private readonly TimeSpan _interval;
     private readonly ImageQueue _queue;
     private readonly DisplayCommunicationService _displayCommunicationService;
+    private readonly Logger<ImageSender> _logger;
 
-    public ImageSender(ImageQueue queue, DisplayCommunicationService displayCommunicationService)
+    public ImageSender(ImageQueue queue, DisplayCommunicationService displayCommunicationService, Logger<ImageSender> logger)
     {
-        _interval = TimeSpan.FromSeconds(30);
+        _interval = TimeSpan.FromMilliseconds(100);
         _queue = queue;
         _displayCommunicationService = displayCommunicationService;
+        _logger = logger;
     }
     
     public Task StartAsync(CancellationToken stoppingToken)
@@ -30,6 +32,7 @@ public class ImageSender : IHostedService
     {
         if(_queue.TryDequeueImage(out var image))
         {
+            _logger.LogInformation("Dequeued Image, Sent to Display");
             _displayCommunicationService.SendImage(image);
         }
     }

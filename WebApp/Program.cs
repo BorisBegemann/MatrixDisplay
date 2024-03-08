@@ -7,7 +7,7 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
         builder.Services.AddRazorPages();
         builder.Services.AddSingleton<ImageQueue>();
-        builder.Services.AddSingleton(new DisplayCommunicationService(0, 0));
+        builder.Services.AddSingleton<DisplayCommunicationService>();
         builder.Services.AddHostedService<ImageSender>();
         
         var app = builder.Build();

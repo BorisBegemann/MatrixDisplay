@@ -4,11 +4,13 @@ namespace WebApp;
 
 public class DisplayCommunicationService
 {
+    private readonly Logger<DisplayCommunicationService> _logger;
     private readonly SpiDevice? _spi;
     
-    public DisplayCommunicationService(int busId, int chipSelectLine)
+    public DisplayCommunicationService(Logger<DisplayCommunicationService> logger)
     {
-        _spi = SpiDevice.Create(new SpiConnectionSettings(busId, chipSelectLine)
+        _logger = logger;
+        _spi = SpiDevice.Create(new SpiConnectionSettings(0, 0)
         {
             ClockFrequency = 500000,
             Mode = SpiMode.Mode0,
@@ -19,6 +21,7 @@ public class DisplayCommunicationService
     public void SendImage(DisplayImage image)
     {
         var payload = image.GetPayload().ToArray()[..254];
+        _logger.LogInformation($"Sending {payload.Length} Bytes to Display");
         _spi!.Write(payload);
     }
 }
