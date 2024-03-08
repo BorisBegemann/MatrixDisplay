@@ -6,20 +6,24 @@ namespace WebApp;
 public class DisplayCommunicationService
 {
     private readonly ILogger<DisplayCommunicationService> _logger;
-    private readonly SpiDevice _spi;
-    private readonly GpioPin _latchPin;
+    private readonly SpiDevice _dataSpi;
+    private readonly SpiDevice _latchSpi;
     
     public DisplayCommunicationService(ILogger<DisplayCommunicationService> logger)
     {
         _logger = logger;
-        _spi = SpiDevice.Create(new SpiConnectionSettings(0, 0)
+        _dataSpi = SpiDevice.Create(new SpiConnectionSettings(0, 0)
         {
             ClockFrequency = 1000000,
             Mode = SpiMode.Mode0,
             DataBitLength = 8
         });
-        _latchPin = new GpioController().OpenPin(0, PinMode.Output);
-        _latchPin.Write(PinValue.Low);
+        _latchSpi = SpiDevice.Create(new SpiConnectionSettings(1, 0)
+        {
+            ClockFrequency = 1000000,
+            Mode = SpiMode.Mode0,
+            DataBitLength = 8
+        });
     }
     
     public void SendImage(DisplayImage image)
@@ -28,10 +32,8 @@ public class DisplayCommunicationService
         _logger.LogInformation($"Sending {payload.Length} Bytes to Display");
         foreach (var chunk in payload.Chunk(1740))
         {
-            _spi!.Write(chunk);
-            _latchPin.Write(PinValue.High);
-            Thread.Sleep(1);
-            _latchPin.Write(PinValue.Low);
+            _dataSpi!.Write(chunk);
+            _latchSpi.WriteByte(1);
         }
         
     }
