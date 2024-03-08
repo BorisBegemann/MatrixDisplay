@@ -7,7 +7,7 @@ public class DisplayCommunicationService
 {
     private readonly ILogger<DisplayCommunicationService> _logger;
     private readonly SpiDevice _dataSpi;
-    private readonly SpiDevice _latchSpi;
+    private readonly GpioPin _latchPin;
     
     public DisplayCommunicationService(ILogger<DisplayCommunicationService> logger)
     {
@@ -18,12 +18,8 @@ public class DisplayCommunicationService
             Mode = SpiMode.Mode0,
             DataBitLength = 8
         });
-        _latchSpi = SpiDevice.Create(new SpiConnectionSettings(1, 0)
-        {
-            ClockFrequency = 1000000,
-            Mode = SpiMode.Mode0,
-            DataBitLength = 8
-        });
+        _latchPin = new GpioController().OpenPin(0, PinMode.Output);
+        _latchPin.Write(PinValue.Low);
     }
     
     public void SendImage(DisplayImage image)
@@ -33,7 +29,8 @@ public class DisplayCommunicationService
         foreach (var chunk in payload.Chunk(1740))
         {
             _dataSpi!.Write(chunk);
-            _latchSpi.WriteByte(1);
+            _latchPin.Write(PinValue.High);
+            _latchPin.Write(PinValue.Low);
         }
         
     }
