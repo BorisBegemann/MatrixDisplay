@@ -30,6 +30,7 @@ public class DisplayCommunicationService
         {
             _dataSpi!.Write(chunk);
             _latchPin.Write(PinValue.High);
+            Task.Delay(TimeSpan.FromTicks(20)).Wait();
             _latchPin.Write(PinValue.Low);
         }
         
