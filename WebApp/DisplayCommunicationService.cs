@@ -14,7 +14,7 @@ public class DisplayCommunicationService
         _logger = logger;
         _spi = SpiDevice.Create(new SpiConnectionSettings(0, 0)
         {
-            ClockFrequency = 500000,
+            ClockFrequency = 1000000,
             Mode = SpiMode.Mode0,
             DataBitLength = 8
         });
@@ -30,7 +30,7 @@ public class DisplayCommunicationService
         {
             _spi!.Write(chunk);
             _latchPin.Write(PinValue.High);
-            Thread.Sleep(10);
+            Thread.Sleep(1);
             _latchPin.Write(PinValue.Low);
         }
         
