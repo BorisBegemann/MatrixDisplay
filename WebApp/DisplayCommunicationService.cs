@@ -28,9 +28,9 @@ public class DisplayCommunicationService
         _logger.LogInformation($"Sending {payload.Length} Bytes to Display");
         foreach (var chunk in payload.Chunk(1740))
         {
-            _dataSpi!.Write(chunk);
+            _dataSpi.TransferFullDuplex(chunk, new Span<byte>(new byte[chunk.Length]));
             _latchPin.Write(PinValue.High);
-            Task.Delay(TimeSpan.FromTicks(1)).Wait();
+            Task.Delay(TimeSpan.FromTicks(5)).Wait();
             _latchPin.Write(PinValue.Low);
         }
         
