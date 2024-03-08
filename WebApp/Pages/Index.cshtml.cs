@@ -5,8 +5,15 @@ using SixLabors.ImageSharp;
 namespace WebApp.Pages;
 
 [IgnoreAntiforgeryToken(Order = 1001)]
-public class IndexModel(ILogger<IndexModel> logger) : PageModel
+public class IndexModel : PageModel
 {
+    private readonly ILogger<IndexModel> _logger;
+
+    public IndexModel(ILogger<IndexModel> logger)
+    {
+        _logger = logger;
+    }
+
     public IActionResult OnGet()
     {
         return Page();
@@ -14,7 +21,7 @@ public class IndexModel(ILogger<IndexModel> logger) : PageModel
     
     public IActionResult OnPostImage(string image)
     {
-        logger.LogError("Got called with Image");
+        _logger.LogError("Got called with Image");
         var data = Convert.FromBase64String(image[22..]);
         using (MemoryStream ms = new MemoryStream(data))
         {
