@@ -29,9 +29,11 @@ public class DisplayCommunicationService
         foreach (var chunk in payload.Chunk(1740))
         {
             _dataSpi.TransferFullDuplex(chunk, new Span<byte>(new byte[chunk.Length]));
+            Task.Delay(TimeSpan.FromTicks(10)).Wait();
             _latchPin.Write(PinValue.High);
             Task.Delay(TimeSpan.FromTicks(20)).Wait();
             _latchPin.Write(PinValue.Low);
+            Task.Delay(TimeSpan.FromTicks(10)).Wait();
         }
         
     }
