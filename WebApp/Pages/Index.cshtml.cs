@@ -1,7 +1,7 @@
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace WebApp.Pages;
 
@@ -28,7 +28,7 @@ public class IndexModel : PageModel
         var data = Convert.FromBase64String(image[22..]);
         using (MemoryStream ms = new MemoryStream(data))
         {
-            _queue.EnqueueImage(new DisplayImage(Image.Load(ms)));
+            _queue.EnqueueImage(new DisplayImage(Image.Load<Rgb24>(ms)));
         }
 
         return new EmptyResult();

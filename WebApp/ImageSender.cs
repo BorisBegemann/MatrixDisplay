@@ -30,11 +30,15 @@ public class ImageSender : IHostedService
 
     private void SendNextImage(object? state)
     {
+        _timer?.Change(Timeout.Infinite, 0);
+        
         if(_queue.TryDequeueImage(out var image))
         {
             _logger.LogInformation("Dequeued Image, Sent to Display");
             _displayCommunicationService.SendImage(image);
         }
+        
+        _timer?.Change(TimeSpan.Zero, _interval);
     }
 
     public Task StopAsync(CancellationToken stoppingToken)

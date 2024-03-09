@@ -1,12 +1,13 @@
 ﻿using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace WebApp;
 
 public class DisplayImage
 {
-    private readonly Image _image;
+    private readonly Image<Rgb24> _image;
     
-    public DisplayImage(Image image)
+    public DisplayImage(Image<Rgb24> image)
     {
         if (image == null)
         {
@@ -23,6 +24,14 @@ public class DisplayImage
     
     public IEnumerable<byte> GetPayload()
     {
+        _image.ProcessPixelRows(accessor =>
+        {
+            for (var verticalIndex = 0; verticalIndex < _image.Height; verticalIndex++)
+            {
+                var row = accessor.GetRowSpan(verticalIndex);
+                var px = row[0].ToScaledVector4().Length() > 0.5f;
+            }
+        });
         using var ms = new MemoryStream();
         _image.SaveAsPng(ms);
         return ms.ToArray();
