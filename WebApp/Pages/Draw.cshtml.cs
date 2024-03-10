@@ -28,7 +28,9 @@ public class DrawModel : PageModel
         var data = Convert.FromBase64String(image[22..]);
         using (MemoryStream ms = new MemoryStream(data))
         {
-            _queue.EnqueueImage(new DisplayImage(Image.Load<Rgb24>(ms)));
+            var img = Image.Load(ms);
+            var displayImage = new DisplayImage(img.CloneAs<Rgb24>());
+            _queue.EnqueueImage(displayImage);
         }
 
         return new EmptyResult();
