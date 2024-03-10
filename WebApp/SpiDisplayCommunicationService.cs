@@ -8,7 +8,7 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
     private readonly ILogger<SpiDisplayCommunicationService> _logger;
     private readonly SpiDevice _dataSpi;
     private readonly GpioPin _latchPin;
-    
+    private byte _frameBufferIndex = 0;
     public SpiDisplayCommunicationService(ILogger<SpiDisplayCommunicationService> logger)
     {
         _logger = logger;
@@ -24,8 +24,9 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
     
     public void SendImage(DisplayImage image)
     {
-        var payload = image.GetPayload(0).ToArray();
+        var payload = image.GetPayload(_frameBufferIndex).ToArray();
         _logger.LogInformation($"Sending {payload.Length} Bytes to Display");
+        
         foreach (var chunk in payload.Chunk(1740))
         {
             _dataSpi.TransferFullDuplex(chunk, new Span<byte>(new byte[chunk.Length]));
@@ -36,5 +37,6 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
             Task.Delay(TimeSpan.FromTicks(10)).Wait();
         }
         
+        _frameBufferIndex ^= 1;
     }
 }
