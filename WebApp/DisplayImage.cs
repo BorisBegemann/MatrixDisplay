@@ -47,24 +47,36 @@ public class DisplayImage
         { 7, 0b11111111 }
     };
     
+    private static readonly Dictionary<int, bool> IsVerticallyInverted = new()
+    {
+        { 2, false },
+        { 7, false },
+        { 5, false },
+        { 0, false },
+        { 4, true },
+        { 3, true },
+        { 1, true },
+        { 6, true }
+    };
+    
     private static readonly Dictionary<(int Address, int Index), bool> IsInverted = new()
     {
         { (2,1), false },
         { (7,1), false },
         { (5,1), false },
         { (0,1), false },
-        { (4,1), true },
-        { (3,1), true },
-        { (1,1), true },
-        { (6,1), true },
-        { (2,0), true },
+        { (4,1), false },
+        { (3,1), false },
+        { (1,1), false },
+        { (6,1), false },
         { (7,0), true },
+        { (2,0), true },
         { (5,0), true },
         { (0,0), true },
-        { (4,0), false },
-        { (3,0), false },
-        { (1,0), false },
-        { (6,0), false },
+        { (4,0), true },
+        { (3,0), true },
+        { (1,0), true },
+        { (6,0), true },
     };
     
     private static readonly Dictionary<int, int> SwathHeightByAddress = new() { { 2, 7 }, { 7, 7 }, { 5, 6 }, { 0, 6 }, { 4, 7 }, { 3, 7 }, { 1, 6 }, { 6, 6 } };
@@ -110,7 +122,14 @@ public class DisplayImage
             var row = accessor.GetRowSpan(verticalOffset + intraSwathVerticalIndex);
             for (var intraSwathHorizontalIndex = 0; intraSwathHorizontalIndex < 580; intraSwathHorizontalIndex++)
             {
-                buffer[intraSwathVerticalIndex, intraSwathHorizontalIndex] = row[intraSwathHorizontalIndex].ToScaledVector4().Length() > 0.5f;
+                if (IsVerticallyInverted[swathAddress])
+                {
+                    buffer[height - 1 - intraSwathVerticalIndex, intraSwathHorizontalIndex] =  row[intraSwathHorizontalIndex] is { R: > 128, G: > 128, B: > 128 };
+                }
+                else
+                {
+                    buffer[intraSwathVerticalIndex, intraSwathHorizontalIndex] =  row[intraSwathHorizontalIndex] is { R: > 128, G: > 128, B: > 128 };
+                }
             }
         }
     }
@@ -122,10 +141,18 @@ public class DisplayImage
         
         for (var intraSwathVerticalIndex = 0; intraSwathVerticalIndex < height; intraSwathVerticalIndex++)
         {
-            var row = accessor.GetRowSpan(104 - verticalOffset - height + 1 - intraSwathVerticalIndex);
+            var row = accessor.GetRowSpan(103 - verticalOffset - intraSwathVerticalIndex);
             for (var intraSwathHorizontalIndex = 0; intraSwathHorizontalIndex < 580; intraSwathHorizontalIndex++)
             {
-                buffer[intraSwathVerticalIndex, intraSwathHorizontalIndex] = row[579 - intraSwathHorizontalIndex].ToScaledVector4().Length() > 0.5f;
+                if (IsVerticallyInverted[swathAddress])
+                {
+                    buffer[height - 1 - intraSwathVerticalIndex, intraSwathHorizontalIndex] = row[579 - intraSwathHorizontalIndex] is { R: > 128, G: > 128, B: > 128 };
+                }
+                else
+                {
+                    buffer[intraSwathVerticalIndex, intraSwathHorizontalIndex] = row[579 - intraSwathHorizontalIndex] is { R: > 128, G: > 128, B: > 128 };
+                }
+                
             }
         }
     }
@@ -179,6 +206,8 @@ public class DisplayImage
             serializedData.Add(FourthByteByAddress[swathAddress]);
             var addressByte = (byte)(swathAddress << 3);
             addressByte |= (byte)(frameBufferIndex << 2);
+            addressByte += 3;
+            
             serializedData.Add(addressByte);
         }
         

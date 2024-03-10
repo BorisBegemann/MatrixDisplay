@@ -9,7 +9,7 @@ public class Program
         builder.Logging.AddConsole();
         
         builder.Services.AddSingleton<ImageQueue>();
-        builder.Services.AddSingleton<DisplayCommunicationService>();
+        builder.Services.AddSingleton<IDisplayCommunicationService, SpiDisplayCommunicationService>();
         builder.Services.AddHostedService<ImageSender>();
         
         builder.Services.AddRazorPages(options =>

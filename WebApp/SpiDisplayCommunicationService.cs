@@ -3,13 +3,13 @@ using System.Device.Spi;
 
 namespace WebApp;
 
-public class DisplayCommunicationService
+public class SpiDisplayCommunicationService : IDisplayCommunicationService
 {
-    private readonly ILogger<DisplayCommunicationService> _logger;
+    private readonly ILogger<SpiDisplayCommunicationService> _logger;
     private readonly SpiDevice _dataSpi;
     private readonly GpioPin _latchPin;
     
-    public DisplayCommunicationService(ILogger<DisplayCommunicationService> logger)
+    public SpiDisplayCommunicationService(ILogger<SpiDisplayCommunicationService> logger)
     {
         _logger = logger;
         _dataSpi = SpiDevice.Create(new SpiConnectionSettings(0, 0)
