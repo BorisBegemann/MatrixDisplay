@@ -1,0 +1,15 @@
+﻿@page
+@model WebApp.Pages.Custom
+<script src="/js/custom.js"></script>
+<div class="text-center">
+    <form method="post" enctype="multipart/form-data">
+        <input type="file" asp-for="Upload" />
+        <input type="submit" />
+    </form>
+    @foreach(var file in Model.GetAvailableImages())
+    {
+        <div>
+            <img src="@Url.Page("Custom","Image",new {name=file })" alt="@file" style="padding: 3px" onclick="sendImage('@file')" />
+        </div>
+    }
+</div>
