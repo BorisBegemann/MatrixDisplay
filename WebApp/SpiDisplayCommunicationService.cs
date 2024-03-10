@@ -1,56 +1,42 @@
 ﻿using System.Device.Gpio;
-using System.Device.Pwm;
 using System.Device.Spi;
-using System.Diagnostics;
 
 namespace WebApp;
 
 public class SpiDisplayCommunicationService : IDisplayCommunicationService
 {
     private readonly ILogger<SpiDisplayCommunicationService> _logger;
-    private readonly SpiDevice _spiFront;
-    private SpiDevice? _spiBack;
-    private GpioController _ctl;
-    private PwmChannel _brightnessFront;
-    private PwmChannel _brightnessBack;
+    private readonly SpiDevice _dataSpi;
+    private readonly GpioPin _latchPin;
     private byte _frameBufferIndex = 0;
-
-    private readonly bool _frontIsInverted = true;
-    private readonly bool _backIsInverted = true;
-    private readonly int _spiFrequency = 1000000;
-
     public SpiDisplayCommunicationService(ILogger<SpiDisplayCommunicationService> logger)
     {
         _logger = logger;
-        _spiFront = SpiDevice.Create(new SpiConnectionSettings(0, 0)
+        _dataSpi = SpiDevice.Create(new SpiConnectionSettings(0, 0)
         {
-            ClockFrequency = _spiFrequency,
+            ClockFrequency = 1000000,
             Mode = SpiMode.Mode2,
-            DataFlow = DataFlow.MsbFirst,
             DataBitLength = 8
         });
+        _latchPin = new GpioController().OpenPin(15, PinMode.Output);
+        _latchPin.Write(PinValue.Low);
     }
-
+    
     public void SendImage(DisplayImage image)
     {
-        var stopWatch = new Stopwatch();
-        stopWatch.Start();
+        var payload = image.GetPayload(_frameBufferIndex).ToArray();
+        _logger.LogInformation($"Sending {payload.Length} Bytes to Display");
         
-        var frontPayload = _frontIsInverted
-            ? image.GetInvertedPayload(_frameBufferIndex)
-            : image.GetPayload(_frameBufferIndex);
-        
-        _logger.LogInformation($"Sending {frontPayload.Length} Bytes to Front Display");
-
-        foreach (var chunk in frontPayload.Chunk(1740))
+        foreach (var chunk in payload.Chunk(1740))
         {
-            _spiFront.Write(chunk);
+            _dataSpi.TransferFullDuplex(chunk, new Span<byte>(new byte[chunk.Length]));
+            Task.Delay(TimeSpan.FromTicks(10)).Wait();
+            _latchPin.Write(PinValue.High);
+            Task.Delay(TimeSpan.FromTicks(20)).Wait();
+            _latchPin.Write(PinValue.Low);
+            Task.Delay(TimeSpan.FromTicks(10)).Wait();
         }
         
-        _spiFront.Read(new Span<byte>(new byte[2000]));
-        
         _frameBufferIndex ^= 1;
-        stopWatch.Stop();
-        _logger.LogInformation("Transfer took {1} ms", stopWatch.ElapsedMilliseconds);
     }
 }
