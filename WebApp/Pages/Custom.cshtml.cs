@@ -40,10 +40,15 @@ public class Custom : PageModel
     }
     
     [BindProperty]
-    public IFormFile Upload { get; set; }
+    public IFormFile? Upload { get; set; }
     
     public async Task OnPostAsync()
     {
+        if (Upload is null)
+        {
+            return;
+        }
+        
         var file = Path.Combine(_environment.ContentRootPath, "uploads", Guid.NewGuid().ToString());
         var img = await Image.LoadAsync(Upload.OpenReadStream());
         
