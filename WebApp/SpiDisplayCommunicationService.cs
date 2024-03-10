@@ -15,7 +15,7 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
         _dataSpi = SpiDevice.Create(new SpiConnectionSettings(0, 0)
         {
             ClockFrequency = 1000000,
-            Mode = SpiMode.Mode0,
+            Mode = SpiMode.Mode2,
             DataBitLength = 8
         });
         _latchPin = new GpioController().OpenPin(0, PinMode.Output);
