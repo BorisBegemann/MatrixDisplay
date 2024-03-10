@@ -12,8 +12,10 @@ public class Program
         builder.Services.AddSingleton<DisplayCommunicationService>();
         builder.Services.AddHostedService<ImageSender>();
         
-        builder.Services.AddRazorPages();
-        
+        builder.Services.AddRazorPages(options =>
+        {
+            options.Conventions.AddPageRoute("/Draw", "{*url}");
+        });
         var app = builder.Build();
         app.UseStaticFiles();
         app.UseRouting();

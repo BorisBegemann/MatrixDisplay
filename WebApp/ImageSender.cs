@@ -11,7 +11,7 @@ public class ImageSender : IHostedService
 
     public ImageSender(ImageQueue queue, DisplayCommunicationService displayCommunicationService, ILogger<ImageSender> logger)
     {
-        _interval = TimeSpan.FromMilliseconds(100);
+        _interval = TimeSpan.FromMilliseconds(2000);
         _queue = queue;
         _displayCommunicationService = displayCommunicationService;
         _logger = logger;

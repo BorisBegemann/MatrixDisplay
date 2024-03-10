@@ -1,6 +1,10 @@
 ﻿@page
 @model WebApp.Pages.Samples
 
+<script src="/js/samples.js"></script>
 <div class="text-center">
-
+    @foreach(var sample in Model.SampleImages.Select((image, index) => (image, index))) 
+    {
+        <img src="img/@sample.image" width="580px" height="104px" onclick="sendSample(@sample.index)" alt="sample image @sample.image" style="padding: 3px"/>
+    }
 </div>
