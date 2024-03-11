@@ -1,4 +1,5 @@
 ﻿using System.Device.Gpio;
+using System.Device.Pwm;
 using System.Device.Spi;
 
 namespace WebApp;
@@ -9,6 +10,7 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
     private readonly SpiDevice _dataSpi;
     private readonly GpioPin _latchPin;
     private byte _frameBufferIndex = 0;
+    private PwmChannel _pwm;
     public SpiDisplayCommunicationService(ILogger<SpiDisplayCommunicationService> logger)
     {
         _logger = logger;
@@ -20,6 +22,14 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
         });
         _latchPin = new GpioController().OpenPin(0, PinMode.Output);
         _latchPin.Write(PinValue.Low);
+        
+        _pwm = PwmChannel.Create(0, 0, 500000, 0.5);
+        _pwm.Start();
+    }
+
+    public void SetPwmDutyCycle(double dutyCycle)
+    {
+        _pwm.DutyCycle = dutyCycle;
     }
     
     public void SendImage(DisplayImage image)
