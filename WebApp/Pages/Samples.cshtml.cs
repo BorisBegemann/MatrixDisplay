@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 
 namespace WebApp.Pages;
 
@@ -38,6 +39,7 @@ public class Samples : PageModel
         _logger.LogInformation("Received sample index {0}", sampleIndex);
         var imageName = SampleImages[sampleIndex];
         var img = Image.Load($"wwwroot/img/{imageName}");
+        img.Mutate(x => x.RotateFlip(RotateMode.Rotate180, FlipMode.None));
         var displayImage = new DisplayImage(img.CloneAs<Rgb24>());
         _queue.EnqueueImage(displayImage);
         return new EmptyResult();

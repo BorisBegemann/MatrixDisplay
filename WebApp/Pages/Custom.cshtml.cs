@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 
 namespace WebApp.Pages;
 
@@ -56,7 +57,7 @@ public class Custom : PageModel
         {
             return;
         }
-
+        img.Mutate(x => x.RotateFlip(RotateMode.Rotate180, FlipMode.None));
         await img.SaveAsync(file, new PngEncoder());
     }
     

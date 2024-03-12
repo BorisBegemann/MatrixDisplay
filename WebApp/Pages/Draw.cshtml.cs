@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 
 namespace WebApp.Pages;
 
@@ -29,6 +30,7 @@ public class DrawModel : PageModel
         using (MemoryStream ms = new MemoryStream(data))
         {
             var img = Image.Load(ms);
+            img.Mutate(x => x.RotateFlip(RotateMode.Rotate180, FlipMode.None));
             var displayImage = new DisplayImage(img.CloneAs<Rgb24>());
             _queue.EnqueueImage(displayImage);
         }
