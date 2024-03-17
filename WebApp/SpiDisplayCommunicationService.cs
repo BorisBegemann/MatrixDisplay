@@ -57,6 +57,7 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
         }
         
         var stopWatch = new Stopwatch();
+        stopWatch.Start();
         var readBuffer = new Span<byte>(new byte[1740]);
         
         var frontPayload = _frontIsInverted
