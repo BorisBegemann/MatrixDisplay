@@ -57,7 +57,7 @@ public class Custom : PageModel
         {
             return;
         }
-        img.Mutate(x => x.RotateFlip(RotateMode.Rotate180, FlipMode.None));
+        
         await img.SaveAsync(file, new PngEncoder());
     }
     

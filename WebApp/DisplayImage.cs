@@ -1,5 +1,6 @@
 ﻿using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 
 namespace WebApp;
 
@@ -81,7 +82,19 @@ public class DisplayImage
     
     private static readonly Dictionary<int, int> SwathHeightByAddress = new() { { 2, 7 }, { 7, 7 }, { 5, 6 }, { 0, 6 }, { 4, 7 }, { 3, 7 }, { 1, 6 }, { 6, 6 } };
     
-    public IEnumerable<byte> GetPayload(byte frameBufferIndex)
+    public byte[] GetPayload(byte frameBufferIndex)
+    {
+        return BuildPayload(frameBufferIndex, _image).ToArray();
+    }
+    
+    public byte[] GetInvertedPayload(byte frameBufferIndex)
+    {
+        var invertedImage = _image.Clone();
+        invertedImage.Mutate(x => x.RotateFlip(RotateMode.Rotate180, FlipMode.None));
+        return BuildPayload(frameBufferIndex, invertedImage).ToArray();
+    }
+    
+    private IEnumerable<byte> BuildPayload(byte frameBufferIndex, Image<Rgb24> img)
     {
         if (frameBufferIndex > 1)
         {
@@ -89,7 +102,7 @@ public class DisplayImage
         }
         
         var serializedImage = new List<byte>();
-        _image.ProcessPixelRows(accessor =>
+        img.ProcessPixelRows(accessor =>
         {
             var buffer = new bool[7, 580];
             foreach (var swathAddress in SwathAddresses)
