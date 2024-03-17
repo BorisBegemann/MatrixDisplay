@@ -1,4 +1,7 @@
-﻿namespace WebApp;
+﻿using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+
+namespace WebApp;
 
 public class ImageSender : IHostedService
 {
@@ -19,6 +22,10 @@ public class ImageSender : IHostedService
     
     public Task StartAsync(CancellationToken stoppingToken)
     {
+        var img = Image.Load("wwwroot/img/init.png");
+        var displayImage = new DisplayImage(img.CloneAs<Rgb24>());
+        _queue.EnqueueImage(displayImage);
+        
         _timer = new Timer(
             SendNextImage, 
             null, 
