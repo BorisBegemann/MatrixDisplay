@@ -78,7 +78,7 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
         
         foreach (var chunk in frontPayload.Chunk(1740))
         {
-            _spiBack.TransferFullDuplex(chunk, readBuffer);
+            _spiBack.TransferFullDuplex(chunk, new Span<byte>(new byte[1740]));
             Task.Delay(TimeSpan.FromTicks(10)).Wait();
             _latchPinBack.Write(PinValue.High);
             Task.Delay(TimeSpan.FromTicks(20)).Wait();
