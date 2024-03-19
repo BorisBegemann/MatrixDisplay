@@ -60,6 +60,22 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
         stopWatch.Start();
         var readBuffer = new Span<byte>(new byte[1740]);
         
+        var backPayload = _backIsInverted
+            ? image.GetInvertedPayload(_frameBufferIndex)
+            : image.GetPayload(_frameBufferIndex);
+        
+        _logger.LogInformation($"Sending {backPayload.Length} Bytes to Back Display");
+
+        foreach (var chunk in backPayload.Chunk(1740))
+        {
+            _spiBack.TransferFullDuplex(chunk, readBuffer);
+            Task.Delay(TimeSpan.FromTicks(10)).Wait();
+            _latchPinBack.Write(PinValue.High);
+            Task.Delay(TimeSpan.FromTicks(20)).Wait();
+            _latchPinBack.Write(PinValue.Low);
+            Task.Delay(TimeSpan.FromTicks(10)).Wait();
+        }
+        
         var frontPayload = _frontIsInverted
             ? image.GetInvertedPayload(_frameBufferIndex)
             : image.GetPayload(_frameBufferIndex);
@@ -76,32 +92,6 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
             Task.Delay(TimeSpan.FromTicks(10)).Wait();
         }
         
-        foreach (var chunk in frontPayload.Chunk(1740))
-        {
-            _spiBack.TransferFullDuplex(chunk, new Span<byte>(new byte[1740]));
-            Task.Delay(TimeSpan.FromTicks(10)).Wait();
-            _latchPinBack.Write(PinValue.High);
-            Task.Delay(TimeSpan.FromTicks(20)).Wait();
-            _latchPinBack.Write(PinValue.Low);
-            Task.Delay(TimeSpan.FromTicks(10)).Wait();
-        }
-        
-        //var backPayload = _backIsInverted
-        //    ? image.GetInvertedPayload(_frameBufferIndex)
-        //    : image.GetPayload(_frameBufferIndex);
-        //
-        //_logger.LogInformation($"Sending {frontPayload.Length} Bytes to Back Display");
-//
-        //foreach (var chunk in backPayload.Chunk(1740))
-        //{
-        //    _spiBack.TransferFullDuplex(chunk, readBuffer);
-        //    Task.Delay(TimeSpan.FromTicks(10)).Wait();
-        //    _latchPinBack.Write(PinValue.High);
-        //    Task.Delay(TimeSpan.FromTicks(20)).Wait();
-        //    _latchPinBack.Write(PinValue.Low);
-        //    Task.Delay(TimeSpan.FromTicks(10)).Wait();
-        //}
-
         _frameBufferIndex ^= 1;
         stopWatch.Stop();
         _logger.LogInformation("Transfer took {1} ms", stopWatch.ElapsedMilliseconds);
