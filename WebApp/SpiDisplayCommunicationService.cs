@@ -76,13 +76,7 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
             Task.Delay(TimeSpan.FromTicks(10)).Wait();
         }
         
-        var backPayload = _backIsInverted
-            ? image.GetInvertedPayload(_frameBufferIndex)
-            : image.GetPayload(_frameBufferIndex);
-        
-        _logger.LogInformation($"Sending {frontPayload.Length} Bytes to Back Display");
-
-        foreach (var chunk in backPayload.Chunk(1740))
+        foreach (var chunk in frontPayload.Chunk(1740))
         {
             _spiBack.TransferFullDuplex(chunk, readBuffer);
             Task.Delay(TimeSpan.FromTicks(10)).Wait();
@@ -91,6 +85,22 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
             _latchPinBack.Write(PinValue.Low);
             Task.Delay(TimeSpan.FromTicks(10)).Wait();
         }
+        
+        //var backPayload = _backIsInverted
+        //    ? image.GetInvertedPayload(_frameBufferIndex)
+        //    : image.GetPayload(_frameBufferIndex);
+        //
+        //_logger.LogInformation($"Sending {frontPayload.Length} Bytes to Back Display");
+//
+        //foreach (var chunk in backPayload.Chunk(1740))
+        //{
+        //    _spiBack.TransferFullDuplex(chunk, readBuffer);
+        //    Task.Delay(TimeSpan.FromTicks(10)).Wait();
+        //    _latchPinBack.Write(PinValue.High);
+        //    Task.Delay(TimeSpan.FromTicks(20)).Wait();
+        //    _latchPinBack.Write(PinValue.Low);
+        //    Task.Delay(TimeSpan.FromTicks(10)).Wait();
+        //}
 
         _frameBufferIndex ^= 1;
         stopWatch.Stop();
