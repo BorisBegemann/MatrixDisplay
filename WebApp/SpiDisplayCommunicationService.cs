@@ -15,7 +15,7 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
 
     private readonly bool _frontIsInverted = true;
     private readonly bool _backIsInverted = true;
-    private readonly int _spiFrequency = 10000000;
+    private readonly int _spiFrequency = 1000000;
 
     public SpiDisplayCommunicationService(ILogger<SpiDisplayCommunicationService> logger)
     {
