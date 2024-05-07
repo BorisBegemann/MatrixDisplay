@@ -173,7 +173,6 @@ public class DisplayImage
     private static void SerializeBuffer(int swathAddress, byte frameBufferIndex, ref bool[,] buffer, ref List<byte> serializedData)
     {
         var height = SwathHeightByAddress[swathAddress];
-        var serializedImage = new List<byte>();
         for (var horizontalIndex = 0; horizontalIndex < 580; horizontalIndex += 4)
         {
             var data = new byte[4] { 0, 0, 0, 0 };
