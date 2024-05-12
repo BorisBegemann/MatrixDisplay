@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
 
 namespace WebApp.Pages;
 
@@ -51,7 +50,7 @@ public class Custom : PageModel
         }
         
         var file = Path.Combine(_environment.ContentRootPath, "uploads", Guid.NewGuid().ToString());
-        var img = await Image.LoadAsync(Upload.OpenReadStream());
+        using var img = await Image.LoadAsync(Upload.OpenReadStream());
         
         if (img.Width != 580 || img.Height != 104)
         {
@@ -63,7 +62,7 @@ public class Custom : PageModel
     
     public IActionResult OnPostShowImage(string imageName)
     {
-        var img = Image.Load(Path.Combine(_environment.ContentRootPath, "uploads", imageName));
+        using var img = Image.Load(Path.Combine(_environment.ContentRootPath, "uploads", imageName));
         var displayImage = new DisplayImage(img.CloneAs<Rgb24>());
         _queue.EnqueueImage(displayImage);
         return new EmptyResult();

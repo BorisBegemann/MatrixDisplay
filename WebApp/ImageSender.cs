@@ -22,7 +22,7 @@ public class ImageSender : IHostedService
     
     public Task StartAsync(CancellationToken stoppingToken)
     {
-        var img = Image.Load("wwwroot/img/init.png");
+        using var img = Image.Load("wwwroot/img/init.png");
         var displayImage = new DisplayImage(img.CloneAs<Rgb24>());
         _queue.EnqueueImage(displayImage);
         

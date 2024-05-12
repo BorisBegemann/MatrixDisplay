@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
 
 namespace WebApp.Pages;
 
@@ -27,13 +26,10 @@ public class DrawModel : PageModel
     {
         _logger.LogInformation("Received Image");
         var data = Convert.FromBase64String(image[22..]);
-        using (MemoryStream ms = new MemoryStream(data))
-        {
-            var img = Image.Load(ms);
-            var displayImage = new DisplayImage(img.CloneAs<Rgb24>());
-            _queue.EnqueueImage(displayImage);
-        }
-
+        using var ms = new MemoryStream(data);
+        using var img = Image.Load(ms);
+        var displayImage = new DisplayImage(img.CloneAs<Rgb24>());
+        _queue.EnqueueImage(displayImage);
         return new EmptyResult();
     }
 }
