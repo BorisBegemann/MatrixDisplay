@@ -1,4 +1,5 @@
 ﻿using System.Device.Gpio;
+using System.Device.Pwm;
 using System.Device.Spi;
 using System.Diagnostics;
 
@@ -9,6 +10,8 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
     private readonly ILogger<SpiDisplayCommunicationService> _logger;
     private SpiDevice? _spiFront;
     private SpiDevice? _spiBack;
+    private PwmChannel _brightnessFront;
+    private PwmChannel _brightnessBack;
     private GpioPin? _latchPinFront;
     private GpioPin? _latchPinBack;
     private byte _frameBufferIndex = 0;
@@ -21,6 +24,13 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
     {
         _logger = logger;
         InitializeSpi();
+        InitializePwm();
+    }
+
+    private void InitializePwm()
+    {
+        _brightnessBack = PwmChannel.Create(0, 0, 500, 0.5D);
+        _brightnessFront = PwmChannel.Create(0, 1, 500, 0.5D);
     }
 
     private void InitializeSpi()
@@ -30,6 +40,7 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
         {
             ClockFrequency = _spiFrequency,
             Mode = SpiMode.Mode2,
+            DataFlow = DataFlow.MsbFirst,
             DataBitLength = 8
         });
     
@@ -38,6 +49,7 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
         {
             ClockFrequency = _spiFrequency,
             Mode = SpiMode.Mode2,
+            DataFlow = DataFlow.MsbFirst,
             DataBitLength = 8
         });
     
@@ -58,7 +70,6 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
         
         var stopWatch = new Stopwatch();
         stopWatch.Start();
-        var readBuffer = new Span<byte>(new byte[1740]);
         
         /*
         var backPayload = _backIsInverted
@@ -86,7 +97,7 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
 
         foreach (var chunk in frontPayload.Chunk(1740))
         {
-            _spiFront.TransferFullDuplex(chunk, readBuffer);
+            _spiFront.Write(chunk);
             Task.Delay(TimeSpan.FromTicks(10)).Wait();
             _latchPinFront.Write(PinValue.High);
             Task.Delay(TimeSpan.FromTicks(20)).Wait();
@@ -96,7 +107,7 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
         
         foreach (var chunk in frontPayload.Chunk(1740))
         {
-            _spiBack.TransferFullDuplex(chunk, readBuffer);
+            _spiBack.Write(chunk);
             Task.Delay(TimeSpan.FromTicks(10)).Wait();
             _latchPinBack.Write(PinValue.High);
             Task.Delay(TimeSpan.FromTicks(20)).Wait();
