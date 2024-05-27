@@ -30,7 +30,9 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
     private void InitializePwm()
     {
         _brightnessBack = PwmChannel.Create(0, 0, 500, 0.5D);
+        _brightnessBack.Start();
         _brightnessFront = PwmChannel.Create(0, 1, 500, 0.5D);
+        _brightnessFront.Start();
     }
 
     private void InitializeSpi()
