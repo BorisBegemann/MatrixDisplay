@@ -12,8 +12,6 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
     private SpiDevice? _spiBack;
     private PwmChannel _brightnessFront;
     private PwmChannel _brightnessBack;
-    private GpioPin? _latchPinFront;
-    private GpioPin? _latchPinBack;
     private byte _frameBufferIndex = 0;
 
     private readonly bool _frontIsInverted = true;
@@ -54,17 +52,11 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
             DataFlow = DataFlow.MsbFirst,
             DataBitLength = 8
         });
-    
-        _latchPinFront = new GpioController().OpenPin(0, PinMode.Output);
-        _latchPinFront.Write(PinValue.Low);
-    
-        _latchPinBack = new GpioController().OpenPin(1, PinMode.Output);
-        _latchPinBack.Write(PinValue.Low);
     }
 
     public void SendImage(DisplayImage image)
     {
-        if (_spiFront == null || _spiBack == null || _latchPinFront == null || _latchPinBack == null)
+        if (_spiFront == null || _spiBack == null)
         {
             _logger.LogWarning("SPI not initialized, skipping image");
             return;
@@ -100,21 +92,11 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
         foreach (var chunk in frontPayload.Chunk(1740))
         {
             _spiFront.Write(chunk);
-            Task.Delay(TimeSpan.FromTicks(10)).Wait();
-            _latchPinFront.Write(PinValue.High);
-            Task.Delay(TimeSpan.FromTicks(20)).Wait();
-            _latchPinFront.Write(PinValue.Low);
-            Task.Delay(TimeSpan.FromTicks(10)).Wait();
         }
         
         foreach (var chunk in frontPayload.Chunk(1740))
         {
             _spiBack.Write(chunk);
-            Task.Delay(TimeSpan.FromTicks(10)).Wait();
-            _latchPinBack.Write(PinValue.High);
-            Task.Delay(TimeSpan.FromTicks(20)).Wait();
-            _latchPinBack.Write(PinValue.Low);
-            Task.Delay(TimeSpan.FromTicks(10)).Wait();
         }
         
         _frameBufferIndex ^= 1;
