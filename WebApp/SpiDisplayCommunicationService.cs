@@ -21,7 +21,7 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
     public SpiDisplayCommunicationService(ILogger<SpiDisplayCommunicationService> logger)
     {
         _logger = logger;
-        InitializeSpi();
+        //InitializeSpi();
         InitializePwm();
     }
 
@@ -65,39 +65,38 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
         var stopWatch = new Stopwatch();
         stopWatch.Start();
         
-        /*
-        var backPayload = _backIsInverted
-            ? image.GetInvertedPayload(_frameBufferIndex)
-            : image.GetPayload(_frameBufferIndex);
-        
-        _logger.LogInformation($"Sending {backPayload.Length} Bytes to Back Display");
-
-        foreach (var chunk in backPayload.Chunk(1740))
-        {
-            _spiBack.TransferFullDuplex(chunk, readBuffer);
-            Task.Delay(TimeSpan.FromTicks(10)).Wait();
-            _latchPinBack.Write(PinValue.High);
-            Task.Delay(TimeSpan.FromTicks(20)).Wait();
-            _latchPinBack.Write(PinValue.Low);
-            Task.Delay(TimeSpan.FromTicks(10)).Wait();
-        }
-        */
-        
         var frontPayload = _frontIsInverted
             ? image.GetInvertedPayload(_frameBufferIndex)
             : image.GetPayload(_frameBufferIndex);
         
         _logger.LogInformation($"Sending {frontPayload.Length} Bytes to Front Display");
 
+        _spiFront = SpiDevice.Create(new SpiConnectionSettings(0, 0)
+        {
+            ClockFrequency = _spiFrequency,
+            Mode = SpiMode.Mode2,
+            DataFlow = DataFlow.MsbFirst,
+            DataBitLength = 8
+        });
+        
         foreach (var chunk in frontPayload.Chunk(1740))
         {
             _spiFront.Write(chunk);
         }
+        _spiFront?.Dispose();
         
+        _spiBack = SpiDevice.Create(new SpiConnectionSettings(1, 0)
+        {
+            ClockFrequency = _spiFrequency,
+            Mode = SpiMode.Mode2,
+            DataFlow = DataFlow.MsbFirst,
+            DataBitLength = 8
+        });
         foreach (var chunk in frontPayload.Chunk(1740))
         {
             _spiBack.Write(chunk);
         }
+        _spiBack?.Dispose();
         
         _frameBufferIndex ^= 1;
         stopWatch.Stop();
