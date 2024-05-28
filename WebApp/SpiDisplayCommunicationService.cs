@@ -56,12 +56,6 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
 
     public void SendImage(DisplayImage image)
     {
-        if (_spiFront == null || _spiBack == null)
-        {
-            _logger.LogWarning("SPI not initialized, skipping image");
-            return;
-        }
-        
         var stopWatch = new Stopwatch();
         stopWatch.Start();
         
