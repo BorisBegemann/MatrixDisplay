@@ -36,7 +36,7 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
 
     private void InitializeSpi()
     {
-        _ctl = new GpioController(PinNumberingScheme.Logical);
+        _ctl = new GpioController(PinNumberingScheme.Board);
         _ctl.OpenPin(8, PinMode.Output);
     }
 
