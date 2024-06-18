@@ -79,7 +79,7 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
         }
         _spiFront?.Dispose();
         
-        _spiBack = SpiDevice.Create(new SpiConnectionSettings(1, 0)
+        _spiBack = SpiDevice.Create(new SpiConnectionSettings(0, 1)
         {
             ClockFrequency = _spiFrequency,
             Mode = SpiMode.Mode2,
