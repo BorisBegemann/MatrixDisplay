@@ -69,11 +69,14 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
         {
             _spiFront.Write(chunk);
         }
+
+        _ = _spiFront.ReadByte();
         
         foreach (var chunk in frontPayload.Chunk(1740))
         {
             _spiBack.Write(chunk);
         }
+        _ = _spiBack.ReadByte();
         
         _frameBufferIndex ^= 1;
         stopWatch.Stop();
