@@ -21,7 +21,7 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
     public SpiDisplayCommunicationService(ILogger<SpiDisplayCommunicationService> logger)
     {
         _logger = logger;
-        //InitializeSpi();
+        InitializeSpi();
         InitializePwm();
     }
 
@@ -65,32 +65,15 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
         
         _logger.LogInformation($"Sending {frontPayload.Length} Bytes to Front Display");
 
-        _spiFront = SpiDevice.Create(new SpiConnectionSettings(0, 0)
-        {
-            ClockFrequency = _spiFrequency,
-            Mode = SpiMode.Mode2,
-            DataFlow = DataFlow.MsbFirst,
-            DataBitLength = 8
-        });
-        
         foreach (var chunk in frontPayload.Chunk(1740))
         {
             _spiFront.Write(chunk);
         }
-        _spiFront?.Dispose();
         
-        _spiBack = SpiDevice.Create(new SpiConnectionSettings(0, 1)
-        {
-            ClockFrequency = _spiFrequency,
-            Mode = SpiMode.Mode2,
-            DataFlow = DataFlow.MsbFirst,
-            DataBitLength = 8
-        });
         foreach (var chunk in frontPayload.Chunk(1740))
         {
             _spiBack.Write(chunk);
         }
-        _spiBack?.Dispose();
         
         _frameBufferIndex ^= 1;
         stopWatch.Stop();
