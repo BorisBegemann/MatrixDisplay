@@ -65,10 +65,23 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
         
         _logger.LogInformation($"Sending {frontPayload.Length} Bytes to Front Display");
 
+        _spiFront?.Dispose();
+        _spiFront = SpiDevice.Create(new SpiConnectionSettings(0, 0)
+        {
+            ClockFrequency = _spiFrequency,
+            Mode = SpiMode.Mode2,
+            DataFlow = DataFlow.MsbFirst,
+            DataBitLength = 8
+        });
+        
         foreach (var chunk in frontPayload.Chunk(1740))
         {
             _spiFront.Write(chunk);
         }
+        
+        _spiFront.Dispose();
+        var ctl = new GpioController(PinNumberingScheme.Logical);
+        ctl.Write(8, PinValue.Low);
 
         _spiFront.Read(new Span<byte>(new byte[2000]));
         
