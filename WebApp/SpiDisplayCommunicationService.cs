@@ -37,7 +37,7 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
     private void InitializeSpi()
     {
         _ctl = new GpioController(PinNumberingScheme.Board);
-        _ctl.OpenPin(8, PinMode.Output);
+        _ctl.OpenPin(24, PinMode.Output);
     }
 
     public void SendImage(DisplayImage image)
@@ -50,7 +50,7 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
             : image.GetPayload(_frameBufferIndex);
         
         _logger.LogInformation($"Sending {frontPayload.Length} Bytes to Front Display");
-        _ctl.ClosePin(8);
+        _ctl.ClosePin(24);
         _spiFront = SpiDevice.Create(new SpiConnectionSettings(0, 0)
         {
             ClockFrequency = _spiFrequency,
@@ -65,8 +65,8 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
         }
         
         _spiFront.Dispose();
-        _ctl.OpenPin(8);
-        _ctl.Write(8, PinValue.Low);
+        var pin = _ctl.OpenPin(24);
+        pin.Write(PinValue.Low);
 
         _spiFront.Read(new Span<byte>(new byte[2000]));
         
