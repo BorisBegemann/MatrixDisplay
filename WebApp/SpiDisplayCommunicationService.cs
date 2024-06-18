@@ -70,7 +70,7 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
             _spiFront.Write(chunk);
         }
 
-        _ = _spiFront.ReadByte();
+        _spiFront.Read(new Span<byte>(new byte[20]));
         
         //foreach (var chunk in frontPayload.Chunk(1740))
         //{
