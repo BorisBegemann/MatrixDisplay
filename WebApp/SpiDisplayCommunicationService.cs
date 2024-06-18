@@ -10,6 +10,7 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
     private readonly ILogger<SpiDisplayCommunicationService> _logger;
     private SpiDevice? _spiFront;
     private SpiDevice? _spiBack;
+    private GpioController _ctl;
     private PwmChannel _brightnessFront;
     private PwmChannel _brightnessBack;
     private byte _frameBufferIndex = 0;
@@ -35,23 +36,8 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
 
     private void InitializeSpi()
     {
-        _spiFront?.Dispose();
-        _spiFront = SpiDevice.Create(new SpiConnectionSettings(0, 0)
-        {
-            ClockFrequency = _spiFrequency,
-            Mode = SpiMode.Mode2,
-            DataFlow = DataFlow.MsbFirst,
-            DataBitLength = 8
-        });
-    
-        _spiBack?.Dispose();
-        _spiBack = SpiDevice.Create(new SpiConnectionSettings(0, 1)
-        {
-            ClockFrequency = _spiFrequency,
-            Mode = SpiMode.Mode2,
-            DataFlow = DataFlow.MsbFirst,
-            DataBitLength = 8
-        });
+        _ctl = new GpioController(PinNumberingScheme.Logical);
+        _ctl.OpenPin(8, PinMode.Output);
     }
 
     public void SendImage(DisplayImage image)
@@ -64,8 +50,7 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
             : image.GetPayload(_frameBufferIndex);
         
         _logger.LogInformation($"Sending {frontPayload.Length} Bytes to Front Display");
-
-        _spiFront?.Dispose();
+        _ctl.ClosePin(8);
         _spiFront = SpiDevice.Create(new SpiConnectionSettings(0, 0)
         {
             ClockFrequency = _spiFrequency,
@@ -80,8 +65,8 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
         }
         
         _spiFront.Dispose();
-        var ctl = new GpioController(PinNumberingScheme.Logical);
-        ctl.Write(8, PinValue.Low);
+        _ctl.OpenPin(8);
+        _ctl.Write(8, PinValue.Low);
 
         _spiFront.Read(new Span<byte>(new byte[2000]));
         
