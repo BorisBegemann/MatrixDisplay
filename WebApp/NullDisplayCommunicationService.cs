@@ -9,12 +9,12 @@ class NullDisplayCommunicationService : IDisplayCommunicationService
         _logger = logger;
     }
 
-    public int FrontLatchPin { get; set; }
-    public int BackLatchPin { get; set; }
-    public int SpiClockFrequency { get; set; }
-    public bool SendToFront { get; set; }
-    public bool SendToBack { get; set; }
-    public bool InvertBack { get; set; }
+    public int FrontLatchPin { get; set; } = 8;
+    public int BackLatchPin  { get; set; } = 7;
+    public int SpiClockFrequency  { get; set; } = 1000000;
+    public bool SendToFront { get; set; } = true;
+    public bool SendToBack { get; set; } = false;
+    public bool InvertBack { get; set; } = false;
 
     public void SendImage(DisplayImage image)
     {

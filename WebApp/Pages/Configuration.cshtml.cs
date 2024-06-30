@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc.RazorPages;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace WebApp.Pages;
 
+[BindProperties]
 public class Configuration : PageModel
 {
     private readonly IDisplayCommunicationService _displayCommunicationService;
@@ -9,15 +11,15 @@ public class Configuration : PageModel
     public Configuration(IDisplayCommunicationService displayCommunicationService)
     {
         _displayCommunicationService = displayCommunicationService;
-    }
-    
-    public void OnGet()
-    {
+        
         SpiClockFrequency = _displayCommunicationService.SpiClockFrequency;
         FrontLatchPin = _displayCommunicationService.FrontLatchPin;
         BackLatchPin = _displayCommunicationService.BackLatchPin;
+        SendToFront = _displayCommunicationService.SendToFront;
+        SendToBack = _displayCommunicationService.SendToBack;
+        InvertBack = _displayCommunicationService.InvertBack;
     }
-
+    
     public int SpiClockFrequency { get; set; }
     public int FrontLatchPin { get; set; }
     public int BackLatchPin { get; set; }
