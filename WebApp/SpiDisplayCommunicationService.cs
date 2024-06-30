@@ -43,6 +43,8 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
             Task.Delay(TimeSpan.FromTicks(10)).Wait();
         }
         
+        Task.Delay(TimeSpan.FromTicks(200)).Wait();
+        
         foreach (var chunk in payload.Chunk(1740))
         {
             _dataSpi.Write(chunk);
