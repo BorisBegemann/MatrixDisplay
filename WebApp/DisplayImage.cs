@@ -111,21 +111,21 @@ public class DisplayImage
                 {
                     if (IsInverted[(swathAddress, swathIndex)])
                     {
-                        InvertAndCopyPixelDataToBuffer(accessor, swathAddress, ref buffer);
+                        InvertAndCopyPixelDataToBuffer(accessor, swathAddress, buffer);
                     }
                     else
                     {
-                        CopyPixelDataToBuffer(accessor, swathAddress, ref buffer);
+                        CopyPixelDataToBuffer(accessor, swathAddress, buffer);
                     }
                     
-                    SerializeBuffer(swathAddress, frameBufferIndex, ref buffer, ref serializedImage);
+                    SerializeBuffer(swathAddress, frameBufferIndex, buffer, serializedImage);
                 }
             }
         });
         return serializedImage;
     }
 
-    private static void CopyPixelDataToBuffer(PixelAccessor<Rgb24> accessor, int swathAddress, ref bool[,] buffer)
+    private static void CopyPixelDataToBuffer(PixelAccessor<Rgb24> accessor, int swathAddress, bool[,] buffer)
     {
         var verticalOffset = AddressOffsets[swathAddress];
         var height = SwathHeightByAddress[swathAddress];
@@ -147,7 +147,7 @@ public class DisplayImage
         }
     }
     
-    private static void InvertAndCopyPixelDataToBuffer(PixelAccessor<Rgb24> accessor, int swathAddress, ref bool[,] buffer)
+    private static void InvertAndCopyPixelDataToBuffer(PixelAccessor<Rgb24> accessor, int swathAddress, bool[,] buffer)
     {
         var verticalOffset = AddressOffsets[swathAddress];
         var height = SwathHeightByAddress[swathAddress];
@@ -170,12 +170,12 @@ public class DisplayImage
         }
     }
 
-    private static void SerializeBuffer(int swathAddress, byte frameBufferIndex, ref bool[,] buffer, ref List<byte> serializedData)
+    private static void SerializeBuffer(int swathAddress, byte frameBufferIndex, bool[,] buffer, List<byte> serializedData)
     {
         var height = SwathHeightByAddress[swathAddress];
         for (var horizontalIndex = 0; horizontalIndex < 580; horizontalIndex += 4)
         {
-            var data = new byte[4] { 0, 0, 0, 0 };
+            var data = new byte[] { 0, 0, 0, 0 };
             data[0] |= buffer[0, horizontalIndex + 0] ? (byte)0b11111000 : (byte)0b00000000;
             data[1] |= buffer[0, horizontalIndex + 1] ? (byte)0b00010000 : (byte)0b00000000;
             data[2] |= buffer[0, horizontalIndex + 2] ? (byte)0b00100000 : (byte)0b00000000;
