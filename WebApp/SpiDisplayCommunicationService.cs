@@ -8,7 +8,7 @@ namespace WebApp;
 public class SpiDisplayCommunicationService : IDisplayCommunicationService
 {
     private readonly ILogger<SpiDisplayCommunicationService> _logger;
-    private SpiDevice? _spiFront;
+    private readonly SpiDevice _spiFront;
     private SpiDevice? _spiBack;
     private GpioController _ctl;
     private PwmChannel _brightnessFront;
@@ -22,22 +22,13 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
     public SpiDisplayCommunicationService(ILogger<SpiDisplayCommunicationService> logger)
     {
         _logger = logger;
-        InitializeSpi();
-        InitializePwm();
-    }
-
-    private void InitializePwm()
-    {
-        _brightnessBack = PwmChannel.Create(0, 0, 500, 0.5D);
-        _brightnessBack.Start();
-        _brightnessFront = PwmChannel.Create(0, 1, 500, 0.5D);
-        _brightnessFront.Start();
-    }
-
-    private void InitializeSpi()
-    {
-        _ctl = new GpioController(PinNumberingScheme.Board);
-        _ctl.OpenPin(24, PinMode.Output);
+        _spiFront = SpiDevice.Create(new SpiConnectionSettings(0, 0)
+        {
+            ClockFrequency = _spiFrequency,
+            Mode = SpiMode.Mode2,
+            DataFlow = DataFlow.MsbFirst,
+            DataBitLength = 8
+        });
     }
 
     public void SendImage(DisplayImage image)
@@ -50,31 +41,13 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
             : image.GetPayload(_frameBufferIndex);
         
         _logger.LogInformation($"Sending {frontPayload.Length} Bytes to Front Display");
-        _ctl.ClosePin(24);
-        _spiFront = SpiDevice.Create(new SpiConnectionSettings(0, 0)
-        {
-            ClockFrequency = _spiFrequency,
-            Mode = SpiMode.Mode2,
-            DataFlow = DataFlow.MsbFirst,
-            DataBitLength = 8
-        });
-        
+
         foreach (var chunk in frontPayload.Chunk(1740))
         {
             _spiFront.Write(chunk);
         }
         
-        _spiFront.Dispose();
-        var pin = _ctl.OpenPin(24);
-        pin.Write(PinValue.Low);
-
         _spiFront.Read(new Span<byte>(new byte[2000]));
-        
-        //foreach (var chunk in frontPayload.Chunk(1740))
-        //{
-        //    _spiBack.Write(chunk);
-        //}
-        //_ = _spiBack.ReadByte();
         
         _frameBufferIndex ^= 1;
         stopWatch.Stop();
