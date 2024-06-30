@@ -19,7 +19,7 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
             Mode = SpiMode.Mode2,
             DataBitLength = 8
         });
-        _latchPin = new GpioController().OpenPin(8, PinMode.Output);
+        _latchPin = new GpioController().OpenPin(14, PinMode.Output);
         _latchPin.Write(PinValue.Low);
     }
     
