@@ -1,5 +1,4 @@
 ﻿using System.Device.Gpio;
-using System.Device.Gpio.Drivers;
 using System.Device.Spi;
 
 namespace WebApp;
@@ -7,20 +6,26 @@ namespace WebApp;
 public class SpiDisplayCommunicationService : IDisplayCommunicationService
 {
     private readonly ILogger<SpiDisplayCommunicationService> _logger;
+    private readonly GpioController _gpioController;
     private readonly SpiDevice _dataSpi;
-    private readonly GpioPin _latchPin;
+    private readonly GpioPin _latchPinFront;
+    private readonly GpioPin _latchPinBack;
     private byte _frameBufferIndex = 0;
     public SpiDisplayCommunicationService(ILogger<SpiDisplayCommunicationService> logger)
     {
         _logger = logger;
-        _dataSpi = SpiDevice.Create(new SpiConnectionSettings(0, 0)
+        _dataSpi = SpiDevice.Create(new SpiConnectionSettings(0)
         {
             ClockFrequency = 1000000,
             Mode = SpiMode.Mode2,
             DataBitLength = 8
         });
-        _latchPin = new GpioController().OpenPin(14, PinMode.Output);
-        _latchPin.Write(PinValue.Low);
+        _gpioController = new GpioController();
+        _latchPinFront = _gpioController.OpenPin(8, PinMode.Output);
+        _latchPinFront.Write(PinValue.Low);
+        
+        _latchPinBack = _gpioController.OpenPin(7, PinMode.Output);
+        _latchPinBack.Write(PinValue.Low);
     }
     
     public void SendImage(DisplayImage image)
@@ -30,11 +35,21 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
         
         foreach (var chunk in payload.Chunk(1740))
         {
-            _dataSpi.TransferFullDuplex(chunk, new Span<byte>(new byte[chunk.Length]));
+            _dataSpi.Write(chunk);
             Task.Delay(TimeSpan.FromTicks(10)).Wait();
-            _latchPin.Write(PinValue.High);
-            Task.Delay(TimeSpan.FromTicks(20)).Wait();
-            _latchPin.Write(PinValue.Low);
+            _latchPinFront.Write(PinValue.High);
+            Task.Delay(TimeSpan.FromTicks(30)).Wait();
+            _latchPinFront.Write(PinValue.Low);
+            Task.Delay(TimeSpan.FromTicks(10)).Wait();
+        }
+        
+        foreach (var chunk in payload.Chunk(1740))
+        {
+            _dataSpi.Write(chunk);
+            Task.Delay(TimeSpan.FromTicks(10)).Wait();
+            _latchPinBack.Write(PinValue.High);
+            Task.Delay(TimeSpan.FromTicks(30)).Wait();
+            _latchPinBack.Write(PinValue.Low);
             Task.Delay(TimeSpan.FromTicks(10)).Wait();
         }
         
