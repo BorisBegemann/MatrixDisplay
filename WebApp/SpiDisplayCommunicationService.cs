@@ -17,8 +17,8 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
     public int BackLatchPin  { get; set; } = 7;
     public int SpiClockFrequency  { get; set; } = 1000000;
     public bool SendToFront { get; set; } = true;
-    public bool SendToBack { get; set; } = false;
-    public bool InvertBack { get; set; } = false;
+    public bool SendToBack { get; set; } = true;
+    public bool InvertBack { get; set; } = true;
 
     public SpiDisplayCommunicationService(ILogger<SpiDisplayCommunicationService> logger)
     {
