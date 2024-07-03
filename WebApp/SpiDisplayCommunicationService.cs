@@ -3,7 +3,11 @@ using System.Device.Spi;
 
 namespace WebApp;
 
-public class SpiDisplayCommunicationService : IDisplayCommunicationService
+public interface ISpiDisplayCommunicationService
+{
+}
+
+public class SpiDisplayCommunicationService : IDisplayCommunicationService, ISpiDisplayCommunicationService
 {
     private readonly ILogger<SpiDisplayCommunicationService> _logger;
     private GpioController? _gpioController;
@@ -15,6 +19,8 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
     
     public int FrontLatchPin { get; set; } = 8;
     public int BackLatchPin  { get; set; } = 7;
+    public int LatchDelayInTicks { get; set; } = 10;
+    public int LatchDurationInTicks { get; set; } = 30;
     public int SpiClockFrequency  { get; set; } = 1000000;
     public bool SendToFront { get; set; } = true;
     public bool SendToBack { get; set; } = true;
@@ -86,11 +92,11 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
             foreach (var chunk in payload.Chunk(1740))
             {
                 _dataSpi.Write(chunk);
-                Task.Delay(TimeSpan.FromTicks(10)).Wait();
+                Task.Delay(TimeSpan.FromTicks(LatchDelayInTicks)).Wait();
                 _latchPinFront.Write(PinValue.High);
-                Task.Delay(TimeSpan.FromTicks(30)).Wait();
+                Task.Delay(TimeSpan.FromTicks(LatchDurationInTicks)).Wait();
                 _latchPinFront.Write(PinValue.Low);
-                Task.Delay(TimeSpan.FromTicks(10)).Wait();
+                Task.Delay(TimeSpan.FromTicks(LatchDelayInTicks)).Wait();
             }
         }
 
@@ -104,11 +110,11 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
             foreach (var chunk in payload.Chunk(1740))
             {
                 _dataSpi.Write(chunk);
-                Task.Delay(TimeSpan.FromTicks(10)).Wait();
+                Task.Delay(TimeSpan.FromTicks(LatchDelayInTicks)).Wait();
                 _latchPinBack.Write(PinValue.High);
-                Task.Delay(TimeSpan.FromTicks(30)).Wait();
+                Task.Delay(TimeSpan.FromTicks(LatchDurationInTicks)).Wait();
                 _latchPinBack.Write(PinValue.Low);
-                Task.Delay(TimeSpan.FromTicks(10)).Wait();
+                Task.Delay(TimeSpan.FromTicks(LatchDelayInTicks)).Wait();
             }
         }
 

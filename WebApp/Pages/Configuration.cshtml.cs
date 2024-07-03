@@ -18,6 +18,8 @@ public class Configuration : PageModel
         SendToFront = _displayCommunicationService.SendToFront;
         SendToBack = _displayCommunicationService.SendToBack;
         InvertBack = _displayCommunicationService.InvertBack;
+        LatchDelayInTicks = _displayCommunicationService.LatchDelayInTicks;
+        LatchDurationInTicks = _displayCommunicationService.LatchDurationInTicks;
     }
     
     public int SpiClockFrequency { get; set; }
@@ -26,7 +28,9 @@ public class Configuration : PageModel
     public bool SendToFront { get; set; }
     public bool SendToBack { get; set; }
     public bool InvertBack { get; set; }
-    
+    public int LatchDelayInTicks { get; set; }
+    public int LatchDurationInTicks { get; set; }
+
     public void OnPost()
     {
         _displayCommunicationService.SpiClockFrequency = SpiClockFrequency;
@@ -35,6 +39,8 @@ public class Configuration : PageModel
         _displayCommunicationService.SendToFront = SendToFront;
         _displayCommunicationService.SendToBack = SendToBack;
         _displayCommunicationService.InvertBack = InvertBack;
+        _displayCommunicationService.LatchDelayInTicks = LatchDelayInTicks;
+        _displayCommunicationService.LatchDurationInTicks = LatchDurationInTicks;
         _displayCommunicationService.RestartComm();
     }
 }
