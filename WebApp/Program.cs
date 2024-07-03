@@ -9,15 +9,14 @@ public class Program
         builder.Logging.AddConsole();
         
         builder.Services.AddSingleton<ImageQueue>();
-        
         builder.Services.AddSingleton<IDisplayCommunicationService, SpiDisplayCommunicationService>();
-        //builder.Services.AddSingleton<IDisplayCommunicationService, NullDisplayCommunicationService>();
         builder.Services.AddHostedService<ImageSender>();
         
         builder.Services.AddRazorPages(options =>
         {
             options.Conventions.AddPageRoute("/Draw", "{*url}");
         });
+        
         var app = builder.Build();
         app.UseStaticFiles();
         app.UseRouting();

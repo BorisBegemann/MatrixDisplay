@@ -6,10 +6,10 @@ namespace WebApp;
 public class SpiDisplayCommunicationService : IDisplayCommunicationService
 {
     private readonly ILogger<SpiDisplayCommunicationService> _logger;
-    private readonly GpioController _gpioController;
-    private SpiDevice _dataSpi;
-    private GpioPin _latchPinFront;
-    private GpioPin _latchPinBack;
+    private GpioController? _gpioController;
+    private SpiDevice? _dataSpi;
+    private GpioPin? _latchPinFront;
+    private GpioPin? _latchPinBack;
     private byte _frameBufferIndex;
     private readonly object _lock = new();
     
@@ -23,33 +23,41 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
     public SpiDisplayCommunicationService(ILogger<SpiDisplayCommunicationService> logger)
     {
         _logger = logger;
-        _gpioController = new GpioController();
         InitComm();
     }
 
     private void InitComm()
     {
-        _dataSpi = SpiDevice.Create(new SpiConnectionSettings(0)
+        try
         {
-            ClockFrequency = SpiClockFrequency,
-            Mode = SpiMode.Mode2,
-            DataBitLength = 8
-        });
-        
-        _latchPinFront = _gpioController.OpenPin(FrontLatchPin, PinMode.Output);
-        _latchPinFront.Write(PinValue.Low);
-        
-        _latchPinBack = _gpioController.OpenPin(BackLatchPin, PinMode.Output);
-        _latchPinBack.Write(PinValue.Low);
+            _dataSpi = SpiDevice.Create(new SpiConnectionSettings(0)
+            {
+                ClockFrequency = SpiClockFrequency,
+                Mode = SpiMode.Mode2,
+                DataBitLength = 8
+            });
+
+            _gpioController = new GpioController();
+            _latchPinFront = _gpioController.OpenPin(FrontLatchPin, PinMode.Output);
+            _latchPinFront.Write(PinValue.Low);
+
+            _latchPinBack = _gpioController.OpenPin(BackLatchPin, PinMode.Output);
+            _latchPinBack.Write(PinValue.Low);
+        }
+        catch (PlatformNotSupportedException)
+        {
+            _logger.LogError($"Error initializing Hardware - Platform not supported");
+        }
     }
 
     public void RestartComm()
     {
         lock (_lock)
         {
-            _gpioController.ClosePin(_latchPinFront.PinNumber);
-            _gpioController.ClosePin(_latchPinBack.PinNumber);
-            _dataSpi.Dispose();
+            if (_latchPinFront != null) _gpioController?.ClosePin(_latchPinFront.PinNumber);
+            if (_latchPinBack != null) _gpioController?.ClosePin(_latchPinBack.PinNumber);
+            _dataSpi?.Dispose();
+            _gpioController?.Dispose();
             InitComm();
         }
     }
@@ -64,7 +72,13 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
 
     private void SendImageInternal(DisplayImage image)
     {
-        var payload = image.GetPayload(_frameBufferIndex).ToArray();
+        if (_dataSpi == null || _latchPinBack == null || _latchPinFront == null)
+        {
+            _logger.LogError($"Hardware not initialized");
+            return;
+        }
+        
+        var payload = image.GetPayload(_frameBufferIndex);
         _logger.LogInformation($"Sending {payload.Length} Bytes to Display");
 
         if (SendToFront)
@@ -84,7 +98,7 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService
         {
             if (InvertBack)
             {
-                payload = image.GetInvertedPayload(_frameBufferIndex).ToArray();
+                payload = image.GetInvertedPayload(_frameBufferIndex);
             }
             
             foreach (var chunk in payload.Chunk(1740))
