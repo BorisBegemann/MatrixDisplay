@@ -50,7 +50,18 @@ function save() {
     const data = new FormData();
     data.append('image', canvas.toDataURL());
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', '?handler=Image', true);
+    xhr.open('POST', '?handler=save', true);
+    xhr.onload = function () {
+        console.log(this.responseText);
+    };
+    xhr.send(data);
+}
+
+function send() {
+    const data = new FormData();
+    data.append('image', canvas.toDataURL());
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', '?handler=send', true);
     xhr.onload = function () {
         console.log(this.responseText);
     };
