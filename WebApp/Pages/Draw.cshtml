@@ -2,10 +2,20 @@
 @model WebApp.Pages.DrawModel
 <script src="/js/canvas.js"></script>
 <div class="text-center">
-    <canvas id="can" width="580" height="104" style="touch-action: none;"></canvas>
-    <input type="button" value="Clear" id="clr" size="23" onclick="erase()">
-    <input type="button" value="Send" id="snd" size="23" onclick="send()">
-    <input type="button" value="Save" id="sav" size="23" onclick="save()">
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <canvas id="can" width="580" height="104" style="touch-action: none;"></canvas>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <input type="button" value="Clear" id="clr" size="23" onclick="erase()">
+                <input type="button" value="Send" id="snd" size="23" onclick="send()">
+                <input type="button" value="Save" id="sav" size="23" onclick="save()">
+			</div>
+        </div>
+    </div>
     <script>
         window.addEventListener('DOMContentLoaded', init, false);
     </script>

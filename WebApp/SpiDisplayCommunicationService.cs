@@ -52,7 +52,7 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService, ISpi
         }
         catch (PlatformNotSupportedException)
         {
-            _logger.LogError($"Error initializing Hardware - Platform not supported");
+            _logger.LogError("Error initializing Hardware - Platform not supported");
         }
     }
 
