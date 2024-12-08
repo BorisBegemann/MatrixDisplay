@@ -11,21 +11,18 @@ public class Custom : PageModel
 {
     private readonly IHostEnvironment _environment;
     private readonly ImageQueue _queue;
+    private readonly ImageManager.ImageManager _imageManager;
 
-    public Custom(IHostEnvironment environment, ImageQueue queue)
+    public Custom(IHostEnvironment environment, ImageQueue queue, ImageManager.ImageManager imageManager)
     {
         _environment = environment;
         _queue = queue;
+        _imageManager = imageManager;
     }
     
     public IReadOnlyList<string> GetAvailableImages()
     {
-        var path = Path.Combine(_environment.ContentRootPath, "uploads");
-        return Directory
-            .GetFiles(path)
-            .Select(Path.GetFileName)
-            .Where(x => x != null)
-            .ToList()!;
+        return _imageManager.GetImages();
     }
 
     public IActionResult OnGetImage(string name)
@@ -56,8 +53,8 @@ public class Custom : PageModel
         {
             return;
         }
-        
-        await img.SaveAsync(file, new PngEncoder());
+
+        await _imageManager.SaveImage(img);
     }
     
     public IActionResult OnPostShowImage(string imageName)
