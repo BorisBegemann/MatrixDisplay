@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.ResponseCompression;
+using MudBlazor.Services;
+using WebApp.Components;
 using WebApp.Hubs;
 
 namespace WebApp;
@@ -11,6 +13,9 @@ public class Program
         builder.Logging.ClearProviders();
         builder.Logging.AddConsole();
         
+        builder.Services.AddRazorComponents()
+            .AddInteractiveServerComponents();
+        
         builder.Services.AddSignalR();
         builder.Services.AddResponseCompression(opts =>
         {
@@ -18,22 +23,25 @@ public class Program
                 ["application/octet-stream"]);
         });
         
+        builder.Services.AddMudServices();
+        builder.Services.AddControllers();
         builder.Services.AddSingleton<ImageQueue>();
         builder.Services.AddSingleton<ImageManager.ImageManager>();
+        builder.Services.AddSingleton<DisplayManager.DisplayManager>();
         builder.Services.AddSingleton<IDisplayCommunicationService, SpiDisplayCommunicationService>();
         builder.Services.AddHostedService<ImageSender>();
-        
-        builder.Services.AddRazorPages(options =>
-        {
-            options.Conventions.AddPageRoute("/Draw", "{*url}");
-        });
         
         var app = builder.Build();
         app.UseResponseCompression();
         app.MapHub<ImageManagerHub>(ImageManagerHub.Path);
-        app.UseStaticFiles();
+        app.MapHub<DisplayManagerHub>(DisplayManagerHub.Path);
         app.UseRouting();
-        app.MapRazorPages();
+        app.MapControllers();
+        app.UseAntiforgery();
+        app.MapRazorComponents<Display>()
+            .AddInteractiveServerRenderMode();
+        
+        app.UseStaticFiles();
         app.Run();
     }
 }

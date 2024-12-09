@@ -20,9 +20,9 @@ public class Custom : PageModel
         _imageManager = imageManager;
     }
     
-    public IReadOnlyList<string> GetAvailableImages()
+    public IReadOnlyList<Guid> GetAvailableImages()
     {
-        return _imageManager.GetImages();
+        return _imageManager.ListImages();
     }
 
     public IActionResult OnGetImage(string name)

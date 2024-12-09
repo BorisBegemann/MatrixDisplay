@@ -1,0 +1,41 @@
+﻿@page "/"
+@using Microsoft.AspNetCore.SignalR.Client
+@using WebApp.DisplayManager
+@using WebApp.Hubs
+@inject NavigationManager Navigation
+@inject DisplayManager DisplayManager
+
+<MudContainer Class="mt-16 px-8" MaxWidth="MaxWidth.False">
+    <MudGrid>
+        <MudItem xs="12" sm="6" md="5">
+            <MudPaper Elevation="2" Class="pa-4" Square="true">
+                <MudText Typo="Typo.subtitle1">Current image</MudText>
+                <MudImage Src="@CurrentImageUrl" Alt="Image currently showing on monitor" Fluid="true"></MudImage>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    private string CurrentImageUrl { get; set; } = string.Empty;
+    private HubConnection? _displayManagerHubConnection;
+    
+    protected override Task OnInitializedAsync()
+    {
+        var currentImage = DisplayManager.GetCurrentImageName();
+        CurrentImageUrl = $"api/image/{currentImage.ToString()}";
+        
+        _displayManagerHubConnection = new HubConnectionBuilder()
+            .WithUrl(Navigation.ToAbsoluteUri(DisplayManagerHub.Path))
+            .WithAutomaticReconnect()
+            .Build();
+        
+        _displayManagerHubConnection.On(nameof(IDisplayManagerHub.DisplayedImageHasChanged), async (string imageName) =>
+        {
+            CurrentImageUrl = $"api/image/{imageName}";
+            await InvokeAsync(StateHasChanged);
+        });
+        
+        return Task.CompletedTask;
+    }
+}

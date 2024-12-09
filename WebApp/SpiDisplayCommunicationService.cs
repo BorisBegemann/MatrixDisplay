@@ -80,7 +80,7 @@ public class SpiDisplayCommunicationService : IDisplayCommunicationService, ISpi
     {
         if (_dataSpi == null || _latchPinBack == null || _latchPinFront == null)
         {
-            _logger.LogError($"Hardware not initialized");
+            _logger.LogError("Hardware not initialized");
             return;
         }
         

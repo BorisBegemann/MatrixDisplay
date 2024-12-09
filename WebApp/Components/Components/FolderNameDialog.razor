@@ -1,0 +1,26 @@
+﻿<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">Name</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudTextField T="string" @bind-Value="@input" Immediate="@true"/>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton
+            Disabled="@string.IsNullOrWhiteSpace(this.input)"
+            OnClick="@Ok"
+            Size="@Size.Small">
+            OK
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private string input = string.Empty;
+
+    [CascadingParameter]
+    private MudDialogInstance MudDialog { get; set; } = default!;
+
+    private void Ok() => MudDialog.Close(DialogResult.Ok(input));
+}

@@ -1,0 +1,15 @@
+﻿@inherits LayoutComponentBase
+
+<MudThemeProvider @rendermode="InteractiveServer"/>
+<MudPopoverProvider @rendermode="InteractiveServer"/>
+<MudDialogProvider @rendermode="InteractiveServer"/>
+<MudSnackbarProvider @rendermode="InteractiveServer"/>
+
+<PageTitle>SbbDisplay</PageTitle>
+<MudLayout>
+    <Navigation/>
+    <MudMainContent>
+        @Body
+    </MudMainContent>
+</MudLayout>
+

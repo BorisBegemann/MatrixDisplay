@@ -10,7 +10,7 @@ public class ImageManagerHub : Hub<IImageManagerHub>
         await Clients.All.DirectoryHasChanged(path);
     }
     
-    public async Task ImageAdded(string path, string name)
+    public async Task ImageAdded(string path, Guid name)
     {
         await Clients.All.ImageAdded(path, name);
     }
@@ -19,5 +19,5 @@ public class ImageManagerHub : Hub<IImageManagerHub>
 public interface IImageManagerHub
 {
     Task DirectoryHasChanged(string path);
-    Task ImageAdded(string path, string name);
+    Task ImageAdded(string path, Guid name);
 }

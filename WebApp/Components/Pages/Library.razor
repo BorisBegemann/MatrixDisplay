@@ -1,0 +1,227 @@
+﻿@page "/Library"
+@page "/library/{startPath}"
+@rendermode InteractiveServer
+@using MudBlazor.Extensions
+@using WebApp.Components.Components
+@using WebApp.ImageManager
+@inject ImageManager ImageManager
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<MudDropContainer T="DropItem" Items="GetImages()" ItemsSelector="@((item,dropzone) => item.Path == dropzone)" ItemDropped="ItemDropped">
+    <ChildContent>
+        <MudContainer Class="mt-16 px-8" MaxWidth="MaxWidth.False">
+            <MudGrid>
+                <MudItem xs="3">
+                    <MudPaper Style="height:100%;" Outlined="true">
+                        <MudTreeView @bind-SelectedValue="SelectedValue" SelectionMode="SelectionMode.SingleSelection"  T="TreeElement" ServerData="@LoadServerData" Items="@InitialTreeItems" Height="100%">
+                            <ItemTemplate>
+                                <MudDropZone T="DropItem" Identifier="@context.Value!.Path" OnlyZone="true">
+                                    <MudTreeViewItem Value="@context.Value" Icon="@Icons.Material.Outlined.Folder" LoadingIconColor="Color.Info" CanExpand="@context.Expandable" OnClick="(e) => FolderSelected()">
+                                        <BodyContent Context="bodyContext">
+                                            <div style="display: grid; grid-template-columns: 1fr auto; align-items: center; width: 100%">
+                                                <MudText Style="justify-self: start;">@bodyContext.Value!.Name</MudText>
+                                                <div style="justify-self: end;">
+                                                    <MudIconButton Icon="@Icons.Material.Filled.Add" Size="Size.Small" Color="Color.Inherit" OnClick="() => AddFolderNew(bodyContext, bodyContext.Value!.Path)" />
+                                                    @if(bodyContext.Value!.CanBeDeleted)
+                                                    {
+                                                        <MudIconButton Icon="@Icons.Material.Filled.Remove" Size="Size.Small" Color="Color.Inherit" OnClick="() => RemoveFolder(bodyContext.Value!.Path)" />
+                                                    }
+                                                </div>
+                                            </div>
+                                        </BodyContent>
+                                    </MudTreeViewItem>
+                                </MudDropZone>
+                            </ItemTemplate>
+                        </MudTreeView>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="5">
+                    <MudStack>
+                        <MudDropZone T="DropItem" Identifier="@SelectedValue?.Path" Class="d-flex flex-wrap flex-grow-1 pa-2 rounded" />
+                    </MudStack>
+                </MudItem>
+            </MudGrid>
+        </MudContainer>
+    </ChildContent>
+    <ItemRenderer>
+            <MudPaper Class="pa-3">
+                <MudImage Src="@context.Url" Alt="Image" Fluid="true"></MudImage>
+                <MudText Typo="Typo.body1">Created At: @context.CreatedAt.ToIsoDateString()</MudText>
+                <MudText Typo="Typo.body1">Created By: @context.CreatedBy</MudText>
+            </MudPaper>
+    </ItemRenderer>
+</MudDropContainer>
+@code {
+    [Parameter]
+    public string? StartPath { get; set; }
+    
+    protected override void OnInitialized()
+    {
+        var rootTreeItem = new TreeItemData<TreeElement>
+        {
+            Value = new TreeElement
+            {
+                Path = "/",
+                Name = "/",
+                Expandable = true,
+                CanBeDeleted = false
+            },
+            Expandable = true
+        };
+        
+        if (StartPath != null)
+        {
+            string[] pathParts = StartPath.Split('/');
+            rootTreeItem.Expanded = true;
+            rootTreeItem.Children = ImageManager.GetChildren("/").Select(r => new TreeItemData<TreeElement>
+            {
+                Value = new TreeElement
+                {
+                    Path = r.Path,
+                    Name = r.Name,
+                    Expandable = true,
+                    CanBeDeleted = true
+                },
+                Expandable = true,
+                Expanded = true
+            }).ToList();
+            
+            var lastTreeItem = rootTreeItem;
+            var cumulativePath = String.Empty;
+            foreach (var pathPart in pathParts)
+            {
+                cumulativePath += "/" + pathPart;
+                lastTreeItem = lastTreeItem.Children!.Single(c => c.Value!.Name == pathPart);
+                lastTreeItem.Expanded = true;
+                lastTreeItem.Children = ImageManager.GetChildren(cumulativePath).Select(r => new TreeItemData<TreeElement>
+                {
+                    Value = new TreeElement
+                    {
+                        Path = r.Path,
+                        Name = r.Name,
+                        Expandable = true,
+                        CanBeDeleted = true
+                    },
+                    Expandable = true
+                }).ToList();
+            }
+        }
+        
+        InitialTreeItems = new List<TreeItemData<TreeElement>>
+        {
+            rootTreeItem
+        };
+        SelectedValue = InitialTreeItems.First().Value;
+    }
+
+    private async Task ItemDropped(MudItemDropInfo<DropItem> dropItem)
+    {
+        await ImageManager.MoveImage(dropItem.Item!.Name, dropItem.Item!.Path, dropItem.DropzoneIdentifier);
+        dropItem.Item!.Path = dropItem.DropzoneIdentifier;
+        Snackbar.Add("Image moved", Severity.Success);
+        await InvokeAsync(StateHasChanged);
+    }
+    
+    public class DropItem
+    {
+        public Guid Name { get; init; }
+        public string Path { get; set; }
+        public string Url { get; init; }
+        public DateTime CreatedAt { get; init; }
+        public string CreatedBy { get; init; }
+    }
+    
+    private Task<IReadOnlyCollection<TreeItemData<TreeElement>>> LoadServerData(TreeElement parentElement)
+    {
+        var result = ImageManager.GetChildren(parentElement.Path).Select(r => new TreeItemData<TreeElement>
+        {
+            Value = new TreeElement
+            {
+                Path = r.Path,
+                Name = r.Name,
+                Expandable = r.IsExpandable,
+                CanBeDeleted = true
+            },
+            Expandable = r.IsExpandable
+        }).ToList();
+        
+        return Task.FromResult<IReadOnlyCollection<TreeItemData<TreeElement>>>(result);
+    }
+
+    private TreeElement? SelectedValue { get; set; }
+    
+    private List<(string Path, DateTime CreatedAt, string CreatedBy)> Images { get; set; } = new();
+    
+    private IReadOnlyCollection<TreeItemData<TreeElement>> InitialTreeItems { get; set; } = new List<TreeItemData<TreeElement>>();
+
+    public class TreeElement
+    {
+        public string Path { get; set; }
+        public string Name { get; set; }
+        public bool Expandable { get; set; }
+        public bool CanBeDeleted { get; set; }
+    }
+
+    private Task FolderSelected()
+    {
+        InvokeAsync(StateHasChanged);
+        return Task.CompletedTask;
+    }
+
+    private List<DropItem> GetImages()
+    {
+        if (SelectedValue == null)
+        {
+            return new();
+        }
+
+        return ImageManager.ListImages(SelectedValue!.Path)
+            .Select(r => new DropItem
+            {
+                Name = r, 
+                Path = SelectedValue!.Path,
+                Url = $"api/image/{r.ToString()}", 
+                CreatedAt = DateTime.Now, 
+                CreatedBy = "admin"
+            }).ToList();
+    }
+
+    private async Task AddFolderNew(MudTreeViewItem<TreeElement?> context, string valuePath)
+    {
+        var options = new DialogOptions
+        {
+            CloseButton = true,
+            MaxWidth = MaxWidth.Small
+        };
+
+        var dialog = await DialogService.ShowAsync<FolderNameDialog>("New folder", new DialogParameters(), options);
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false } and { Data: string data } && !string.IsNullOrWhiteSpace(data))
+        {
+            var creationResult = ImageManager.TryCreateDirectory(valuePath, data);
+            if (creationResult)
+            {
+                Snackbar.Add("Folder created", Severity.Success);
+                context.CanExpand = true;
+                await context.ReloadAsync();
+            }
+        }
+    }
+
+    private void RemoveFolder(string path)
+    {
+        var parent = ImageManager.GetParentPath(path);
+        if (ImageManager.TryRemoveDirectory(path))
+        {
+            Snackbar.Add("Folder removed", Severity.Success);
+            Navigation.NavigateTo(Navigation.Uri + parent, true);
+        }
+        else
+        {
+            Snackbar.Add("Folder not empty", Severity.Error);
+        }
+    }
+}
