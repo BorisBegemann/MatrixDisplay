@@ -1,6 +1,6 @@
 ﻿@inherits LayoutComponentBase
 
-<MudThemeProvider @rendermode="InteractiveServer"/>
+<MudThemeProvider @rendermode="InteractiveServer" Theme="_sbbTheme"/>
 <MudPopoverProvider @rendermode="InteractiveServer"/>
 <MudDialogProvider @rendermode="InteractiveServer"/>
 <MudSnackbarProvider @rendermode="InteractiveServer"/>
@@ -13,3 +13,25 @@
     </MudMainContent>
 </MudLayout>
 
+@code
+{
+    readonly MudTheme _sbbTheme = new()
+    {
+        PaletteLight = new PaletteLight()
+        {
+            Primary = Colors.Blue.Default,
+            Secondary = Colors.Green.Accent4,
+            AppbarBackground = Colors.Red.Default,
+        },
+        PaletteDark = new PaletteDark()
+        {
+            Primary = Colors.Blue.Lighten1
+        },
+
+        LayoutProperties = new LayoutProperties()
+        {
+            DrawerWidthLeft = "260px",
+            DrawerWidthRight = "300px"
+        }
+    };
+}

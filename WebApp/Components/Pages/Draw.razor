@@ -1,0 +1,41 @@
+﻿@page "/Draw"
+@using Blazor.Extensions
+@using Blazor.Extensions.Canvas.Canvas2D
+@rendermode InteractiveServer
+
+<script src="/js/canvas.js"></script>
+<div class="text-center">
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <BECanvas width="580" height="104" @ref="_canvasReference" ></BECanvas>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <input type="button" value="Clear" id="clr" size="23" onclick="erase()">
+                <input type="button" value="Send" id="snd" size="23" onclick="send()">
+                <input type="button" value="Save" id="sav" size="23" onclick="save()">
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private BECanvas _canvasReference;
+    private Canvas2DContext _context;
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        _context = await _canvasReference.CreateCanvas2DAsync();
+        await _context.SetFillStyleAsync("darkblue");
+    }
+    
+    private void OnMouseMove(MouseEventArgs args)
+    {
+        Console.Write(args.MovementX);
+    }
+
+    public ElementReference Canvas { get; set; }
+
+}

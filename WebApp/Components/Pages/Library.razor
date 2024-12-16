@@ -38,7 +38,7 @@
                     </MudPaper>
                 </MudItem>
                 <MudItem xs="5">
-                    <MudStack>
+                    <MudStack Spacing="8">
                         <MudDropZone T="DropItem" Identifier="@SelectedValue?.Path" Class="d-flex flex-wrap flex-grow-1 pa-2 rounded" />
                     </MudStack>
                 </MudItem>
@@ -46,7 +46,7 @@
         </MudContainer>
     </ChildContent>
     <ItemRenderer>
-            <MudPaper Class="pa-3">
+            <MudPaper Class="pa-3" Outlined="true">
                 <MudImage Src="@context.Url" Alt="Image" Fluid="true"></MudImage>
                 <MudText Typo="Typo.body1">Created At: @context.CreatedAt.ToIsoDateString()</MudText>
                 <MudText Typo="Typo.body1">Created By: @context.CreatedBy</MudText>
